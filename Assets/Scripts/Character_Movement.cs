@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Character_Movement : MonoBehaviour
@@ -9,6 +10,7 @@ public class Character_Movement : MonoBehaviour
     private bool isOver;
     private static int lives;
     private bool isJump;
+    private Data_Saver saver;
 
 
     public float speed;
@@ -25,6 +27,7 @@ public class Character_Movement : MonoBehaviour
         menuScreenManager.instance.UIManager(menuScreenManager.instance.gameScreen);
         menuScreenManager.instance.StartHearts();
         rb = GetComponent<Rigidbody2D>();
+        saver = new Data_Saver();
         isOver = false;
         isMove = true;
         groundCheckRadius = 0.2f;
@@ -83,9 +86,7 @@ public class Character_Movement : MonoBehaviour
 
         if (collision.CompareTag(finishScreenTag))
         {
-            isOver = true;
-            menuScreenManager.instance.UIManager(menuScreenManager.instance.finishScreen);
-            gameObject.GetComponent<SpriteRenderer>().enabled = false;
+            FinishGame();
         }
     }
 
@@ -101,5 +102,17 @@ public class Character_Movement : MonoBehaviour
         {
             menuScreenManager.instance.HeartMechanism(lives);
         }
+    }
+
+    private void FinishGame()
+    {
+        isOver = true;
+        menuScreenManager.instance.UIManager(menuScreenManager.instance.finishScreen);
+        gameObject.GetComponent<SpriteRenderer>().enabled = false;
+
+        string key = SceneManager.GetActiveScene().name;
+
+        saver.openLevels.Add(key, true);
+        menuScreenManager.instance.LevelOpen();
     }
 }

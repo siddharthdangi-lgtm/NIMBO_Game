@@ -16,6 +16,7 @@ public class menuScreenManager : MonoBehaviour
     public GameObject gameOverScreen;
     public GameObject gameScreen;
     public GameObject finishScreen;
+    public GameObject pauseScreen;
     public Slider progressBar;
     public TMP_Text progressText;
     public Button startButton;
@@ -27,11 +28,14 @@ public class menuScreenManager : MonoBehaviour
     public Button backwardBtn;
     public Button forwardBtn;
     public Button jumpBtn;
+    public Button pause;
+    public Button resume;
     public List<Button> levels;
     public List<GameObject> hearts;
     public Sprite emptyHeartImage;
     public Sprite heartImage;
     private List<GameObject> myUI;
+    private Data_Saver saver;
     public bool isJump;
     public int direction;
 
@@ -48,7 +52,8 @@ public class menuScreenManager : MonoBehaviour
     }
     void Start()
     {
-        myUI = new List<GameObject> {homeScreen, gameOverScreen, finishScreen, loadingScreen, menuScreen, gameScreen};
+        saver = new Data_Saver();
+        myUI = new List<GameObject> {homeScreen, gameOverScreen, finishScreen, loadingScreen, menuScreen, gameScreen, pauseScreen};
         instance.UIManager(homeScreen);
 
         startButton.onClick.AddListener(StartGame);
@@ -58,6 +63,9 @@ public class menuScreenManager : MonoBehaviour
         menuBtn.onClick.AddListener(Menu);
         back.onClick.AddListener(Back);
         jumpBtn.onClick.AddListener(IsJump);
+        pause.onClick.AddListener(PauseGame);
+        resume.onClick.AddListener(Resume);
+        
 
         AddPointerEvents(forwardBtn, Forward, Stoping);
         AddPointerEvents(backwardBtn, Backward, Stoping);
@@ -70,6 +78,23 @@ public class menuScreenManager : MonoBehaviour
         }
     }
 
+    public void LevelOpen()
+    {
+        Dictionary<string, bool> dictionary = saver.Load();
+        foreach(KeyValuePair<string, bool> kvp in dictionary)
+        {
+            foreach(var level in levels)
+            {
+                string text = level.transform.GetChild(0).GetComponent<TMP_Text>().text;
+                if (text[text.Length - 1] == kvp.Key[kvp.Key.Length - 1])
+                {
+                    level.transform.GetChild(1).gameObject.SetActive(false);
+                    level.GetComponent<Button>().interactable = false;
+                }
+                                      
+            }
+        }
+    }
 
     private void Awake()
     {
@@ -104,6 +129,11 @@ public class menuScreenManager : MonoBehaviour
         instance.UIManager(menuScreen);
     }
 
+    public void Resume()
+    {
+        instance.UIManager(gameScreen);
+    }
+
     public void Next()
     {
         int curr_index = SceneManager.GetActiveScene().buildIndex;
@@ -118,6 +148,11 @@ public class menuScreenManager : MonoBehaviour
     public void Back()
     {
         instance.UIManager(homeScreen);
+    }
+
+    public void PauseGame()
+    {
+        instance.UIManager(pauseScreen);
     }
 
     public void LevelOpen(Button level)
