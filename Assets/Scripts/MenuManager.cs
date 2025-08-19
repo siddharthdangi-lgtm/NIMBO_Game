@@ -1,58 +1,66 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using System.Collections;
-using TMPro;
+using UnityEngine.EventSystems;
 
-public class MenuManager : MonoBehaviour
+public class menuScreenManager : MonoBehaviour
 {
-    public static MenuManager instance;
+    public static menuScreenManager instance;
 
-    public GameObject canvas;
-    public GameObject home;
-    public GameObject menu;
-    public GameObject loadingScreenUI;
-    public GameObject gameOver;
-    public GameObject finish;
+    public GameObject homeScreen;
+    public GameObject menuScreen;
+    public GameObject loadingScreen;
+    public GameObject gameOverScreen;
+    public GameObject gameScreen;
+    public GameObject finishScreen;
     public Slider progressBar;
+    public TMP_Text progressText;
     public Button startButton;
     public Button quitButton;
     public Button next;
     public Button retry;
-    public Button quit;
     public Button back;
     public Button menuBtn;
+    public Button backwardBtn;
+    public Button forwardBtn;
+    public Button jumpBtn;
     public List<Button> levels;
+    public List<GameObject> hearts;
+    public Sprite emptyHeartImage;
+    public Sprite heartImage;
     private List<GameObject> myUI;
+    public bool isJump;
+    public int direction;
+
+    public void Forward() => direction = 1;
+    public void Backward() => direction = -1;
+
+    public void Stoping() => direction = 0;
+    public void IsJump() => isJump = true;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public void UIManager(GameObject trueValue)
     {
-        foreach(GameObject ui in myUI)
-        {
-            if (ui == trueValue)
-            {
-                ui.SetActive(true);
-                break;
-            }
-            else
-            {
-                ui.SetActive(false);
-            }
-        }
+        foreach (GameObject ui in myUI) ui.SetActive(ui == trueValue);
     }
     void Start()
     {
-        instance.UIManager(home);
-        myUI = new List<GameObject> {home, menu, gameOver, finish, canvas, loadingScreenUI};
+        myUI = new List<GameObject> {homeScreen, gameOverScreen, finishScreen, loadingScreen, menuScreen, gameScreen};
+        instance.UIManager(homeScreen);
 
         startButton.onClick.AddListener(StartGame);
         quitButton.onClick.AddListener(QuitGame);
         next.onClick.AddListener(Next);
         retry.onClick.AddListener(Retry);
         menuBtn.onClick.AddListener(Menu);
-        quit.onClick.AddListener(QuitGame);
+        back.onClick.AddListener(Back);
+        jumpBtn.onClick.AddListener(IsJump);
+
+        AddPointerEvents(forwardBtn, Forward, Stoping);
+        AddPointerEvents(backwardBtn, Backward, Stoping);
 
 
         foreach (Button level in levels)
@@ -62,23 +70,23 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public void Awake()
+
+    private void Awake()
     {
-        if(instance == null)
+        if (instance != null && instance != this)
         {
-            instance = this;
-            DontDestroyOnLoad(canvas);
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            Destroy(canvas);
-        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame
     public void StartGame()
     {
-        instance.UIManager(menu);
+        instance.UIManager(menuScreen);
     }
 
     public void QuitGame()
@@ -88,12 +96,12 @@ public class MenuManager : MonoBehaviour
 
     public void Retry()
     {
-        StartCoroutine(LoadSceneAsync(SceneManager.GetActiveScene().name));
+        StartCoroutine(LoadSceneAsync(SceneManager.GetActiveScene().buildIndex));
     }
 
     public void Menu()
     {
-        instance.UIManager(menu);
+        instance.UIManager(menuScreen);
     }
 
     public void Next()
@@ -101,45 +109,86 @@ public class MenuManager : MonoBehaviour
         int curr_index = SceneManager.GetActiveScene().buildIndex;
         int next_index = curr_index + 1;
 
-        if(next_index < SceneManager.sceneCountInBuildSettings)
+        if(next_index < SceneManager.sceneCountInBuildSettings - 1)
         {
-            string sceneName = SceneManager.GetSceneByBuildIndex(next_index).name;
-            StartCoroutine(LoadSceneAsync(sceneName));
+            StartCoroutine(LoadSceneAsync(next_index));
         }
     }
 
     public void Back()
     {
-        instance.UIManager(home);
+        instance.UIManager(homeScreen);
     }
 
     public void LevelOpen(Button level)
     {
-        string sceneName = $"Level{level.GetComponentInChildren<TMP_Text>().text}";
-
-        StartCoroutine(LoadSceneAsync(sceneName));
-
-
+        if (levels.IndexOf(level) > SceneManager.sceneCountInBuildSettings - 1)
+        {
+            
+        }
+        else
+        {
+            int sceneIndx = levels.IndexOf(level);
+            StartCoroutine(LoadSceneAsync(sceneIndx));
+        }
+            
     }
-    IEnumerator LoadSceneAsync(string sceneName)
+    IEnumerator LoadSceneAsync(int sceneIndx)
     {
-        instance.UIManager(loadingScreenUI);
+        instance.UIManager(loadingScreen);
 
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
+        yield return new WaitForSeconds(1);
+
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneIndx);
         operation.allowSceneActivation = false;
 
         while (!operation.isDone)
         {
             float progress = Mathf.Clamp01(operation.progress / 0.9f);
             progressBar.value = progress;
+            progressText.text = progress + "%";
 
-            if(operation.progress >= 0.9f)
+            if (operation.progress >= 0.9f)
             {
                 yield return new WaitForSeconds(0.5f);
+                instance.UIManager(null);
                 operation.allowSceneActivation = true;
             }
             yield return null;
         }
-        
+
+
+    }
+
+    public void StartHearts()
+    {
+        foreach (GameObject heart in hearts)
+        {
+            if (heart.GetComponent<Image>() == null)
+            {
+                heart.GetComponent<Image>().sprite = heartImage;
+            }
+        }
+    }
+
+    public void HeartMechanism(int idx)
+    {
+        hearts[idx].GetComponent<Image>().sprite = emptyHeartImage;
+    }
+
+    private void AddPointerEvents(Button btn, System.Action onDown, System.Action onUp)
+    {
+        EventTrigger trigger = btn.gameObject.AddComponent<EventTrigger>();
+
+        EventTrigger.Entry entryDown = new EventTrigger.Entry();
+        entryDown.eventID = EventTriggerType.PointerDown;
+        entryDown.callback.AddListener((data) => { onDown();});
+        trigger.triggers.Add(entryDown);
+
+        EventTrigger.Entry entryUp = new EventTrigger.Entry();
+        entryUp.eventID = EventTriggerType.PointerUp;
+        entryUp.callback.AddListener((data) => { onUp(); });
+        trigger.triggers.Add(entryUp);
+
     }
 }

@@ -147,7 +147,7 @@ Transform:
   m_GameObject: {fileID: 30858332}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -48.2, y: 6.507762, z: 0}
+  m_LocalPosition: {x: -47, y: 6.6, z: 0}
   m_LocalScale: {x: 1.330109, y: 3.0016363, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -300,8 +300,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 57068050}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.545, y: 1.3865, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.40756512, y: 1.3865004, z: 0}
   m_LocalScale: {x: 0.37665257, y: 1.8299716, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -335,7 +335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Collider_Platform1
   targetObject: {fileID: 1902966725}
-  targetPositionX: -56
+  targetPositionX: -39
   duration: 0.5
 --- !u!61 &57068054
 BoxCollider2D:
@@ -1011,7 +1011,7 @@ Transform:
   m_GameObject: {fileID: 944873625}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -60.3248, y: 4.03, z: 0}
+  m_LocalPosition: {x: -59.6, y: 4.03, z: 0}
   m_LocalScale: {x: 2.4592252, y: 0.9712, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2105,7 +2105,7 @@ MonoBehaviour:
     m_Bits: 8
   platformTag: Platforms
   obstaclesTag: Spikes
-  finishTag: Finish
+  finishScreenTag: Finish
 --- !u!50 &1527376499
 Rigidbody2D:
   serializedVersion: 5

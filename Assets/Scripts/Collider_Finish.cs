@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Collider_Finish : MonoBehaviour
+public class Collider_finishScreen : MonoBehaviour
 {
     [Header("Target Object to Scale")]
     public GameObject targetObject;

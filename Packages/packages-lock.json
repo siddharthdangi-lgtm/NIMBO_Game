@@ -87,6 +87,16 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.adaptiveperformance": {
+      "version": "5.1.5",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.profiling.core": "1.0.2",
+        "com.unity.modules.subsystems": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.burst": {
       "version": "1.8.23",
       "depth": 2,
@@ -133,6 +143,16 @@
       "source": "builtin",
       "dependencies": {}
     },
+    "com.unity.feature.mobile": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.mobile.android-logcat": "1.4.5",
+        "com.unity.adaptiveperformance": "5.1.5",
+        "com.unity.mobile.notifications": "2.4.1"
+      }
+    },
     "com.unity.ide.rider": {
       "version": "3.0.36",
       "depth": 0,
@@ -152,7 +172,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.inputsystem": {
-      "version": "1.14.1",
+      "version": "1.14.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -165,6 +185,22 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.mobile.android-logcat": {
+      "version": "1.4.5",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.mobile.notifications": {
+      "version": "2.4.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.androidjni": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.multiplayer.center": {
@@ -189,6 +225,13 @@
       "dependencies": {
         "com.unity.modules.physics": "1.0.0"
       },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.profiling.core": {
+      "version": "1.0.2",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.render-pipelines.core": {

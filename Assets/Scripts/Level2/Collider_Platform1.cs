@@ -13,10 +13,11 @@ public class Collider_Platform1 : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (targetObject != null)
+
+        if (targetObject != null && collision.CompareTag("Player"))
         {
+            targetObject.GetComponent<BoxCollider2D>().isTrigger = true;
             StartCoroutine(LerpScaleX(targetObject, targetPositionX, duration));
-            
         }
     }
 

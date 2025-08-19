@@ -1,28 +1,35 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Character_Movement : MonoBehaviour
 {
-    public float speed;
-    public float jump_height;
-    private float move;
     private Rigidbody2D rb;
     private bool isMove;
     private bool isGrounded;
     private bool isOver;
+    private static int lives;
+    private bool isJump;
 
+
+    public float speed;
+    public float jump_height;
     public Transform groundCheck;
     public float groundCheckRadius;
     public LayerMask groundLayer;
     public string platformTag;
     public string obstaclesTag;
-    public string finishTag;
+    public string finishScreenTag;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        menuScreenManager.instance.UIManager(menuScreenManager.instance.gameScreen);
+        menuScreenManager.instance.StartHearts();
         rb = GetComponent<Rigidbody2D>();
         isOver = false;
         isMove = true;
         groundCheckRadius = 0.2f;
+        
+        lives = 3;
 
     }
 
@@ -34,12 +41,12 @@ public class Character_Movement : MonoBehaviour
             if (isMove)
             {
                 rb.gravityScale = 3f;
-                move = Input.GetAxis("Horizontal");
+                float move = menuScreenManager.instance.direction;
+                //move = Input.GetAxis("Horizontal");
                 rb.linearVelocity = new Vector2(move * speed, rb.linearVelocity.y);
             }
 
             isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-            Debug.Log(isGrounded);
         }
         
 
@@ -51,10 +58,12 @@ public class Character_Movement : MonoBehaviour
         {
             if (isGrounded) isMove = true;
 
-            if (Input.GetButtonDown("Jump") && isGrounded)
+            isJump = menuScreenManager.instance.isJump;
+            if (isJump && isGrounded)
             {
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jump_height);
                 isGrounded = false;
+                isJump = false;
             }
         }
         
@@ -70,15 +79,27 @@ public class Character_Movement : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag(obstaclesTag))
+        if (collision.CompareTag(obstaclesTag)) Damage();
+
+        if (collision.CompareTag(finishScreenTag))
         {
             isOver = true;
-            MenuManager.instance.UIManager(MenuManager.instance.gameOver);
+            menuScreenManager.instance.UIManager(menuScreenManager.instance.finishScreen);
+            gameObject.GetComponent<SpriteRenderer>().enabled = false;
         }
-        else if (collision.CompareTag(finishTag))
+    }
+
+    private void Damage()
+    {
+        lives--;
+        if(lives < 1)
         {
             isOver = true;
-            MenuManager.instance.UIManager(MenuManager.instance.finish);
+            menuScreenManager.instance.UIManager(menuScreenManager.instance.gameOverScreen);
+        }
+        else
+        {
+            menuScreenManager.instance.HeartMechanism(lives);
         }
     }
 }
