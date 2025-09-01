@@ -5,12 +5,12 @@ using UnityEngine.UI;
 public class Character_Movement : MonoBehaviour
 {
     private Rigidbody2D rb;
+    public static Character_Movement instance;
     private bool isMove;
     private bool isGrounded;
     private bool isOver;
-    private static int lives;
-    private bool isJump;
     private Data_Saver saver;
+    Animator animator;
 
 
     public float speed;
@@ -21,23 +21,21 @@ public class Character_Movement : MonoBehaviour
     public string platformTag;
     public string obstaclesTag;
     public string finishScreenTag;
+    public string fallTag;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        menuScreenManager.instance.UIManager(menuScreenManager.instance.gameScreen);
-        menuScreenManager.instance.StartHearts();
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         saver = new Data_Saver();
         isOver = false;
         isMove = true;
         groundCheckRadius = 0.2f;
+        menuScreenManager.instance.direction = 0;
         
-        lives = 3;
 
     }
-
-    // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         if (!isOver)
         {
@@ -46,30 +44,28 @@ public class Character_Movement : MonoBehaviour
                 rb.gravityScale = 3f;
                 float move = menuScreenManager.instance.direction;
                 //move = Input.GetAxis("Horizontal");
-                rb.linearVelocity = new Vector2(move * speed, rb.linearVelocity.y);
+                rb.linearVelocity = new Vector2(move * speed, rb.linearVelocityY);
+                animator.SetFloat("xVelocity", 0);
             }
+            else animator.SetFloat("xVelocity", 1);
 
             isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        }
-        
 
+            if (isGrounded) isMove = true;
+        }
     }
 
-    private void Update()
+    public void IsJump()
     {
-        if (!isOver)
+        if (instance.isGrounded)
         {
-            if (isGrounded) isMove = true;
-
-            isJump = menuScreenManager.instance.isJump;
-            if (isJump && isGrounded)
-            {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jump_height);
-                isGrounded = false;
-                isJump = false;
-            }
+            rb.AddForce(new Vector2(rb.linearVelocityX, jump_height));
+            instance.isGrounded = false;
+            animator.SetBool("isJumping", !instance.isGrounded);
+            animator.SetFloat("yVelocity", 0);
         }
-        
+        animator.SetBool("isJumping", instance.isGrounded);
+        animator.SetFloat("yVelocity", -1);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -83,25 +79,29 @@ public class Character_Movement : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag(obstaclesTag)) Damage();
+        if (collision.CompareTag(fallTag)) Fall();
 
-        if (collision.CompareTag(finishScreenTag))
-        {
-            FinishGame();
-        }
+        if (collision.CompareTag(finishScreenTag)) FinishGame();
     }
 
     private void Damage()
     {
-        lives--;
-        if(lives < 1)
+        if(menuScreenManager.lives <= 1)
         {
             isOver = true;
             menuScreenManager.instance.UIManager(menuScreenManager.instance.gameOverScreen);
+            menuScreenManager.instance.StartHearts();
         }
         else
         {
-            menuScreenManager.instance.HeartMechanism(lives);
+            menuScreenManager.instance.HeartMechanism();
         }
+    }
+
+    public void Fall()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        Damage();
     }
 
     private void FinishGame()
@@ -113,6 +113,6 @@ public class Character_Movement : MonoBehaviour
         string key = SceneManager.GetActiveScene().name;
 
         saver.openLevels.Add(key, true);
-        menuScreenManager.instance.LevelOpen();
+        menuScreenManager.instance.OpenLevels();
     }
 }

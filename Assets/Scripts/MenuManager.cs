@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using Unity.VisualScripting;
 
 public class menuScreenManager : MonoBehaviour
 {
@@ -36,25 +37,40 @@ public class menuScreenManager : MonoBehaviour
     public Sprite heartImage;
     private List<GameObject> myUI;
     private Data_Saver saver;
-    public bool isJump;
+    public static int lives;
     public int direction;
 
     public void Forward() => direction = 1;
     public void Backward() => direction = -1;
 
     public void Stoping() => direction = 0;
-    public void IsJump() => isJump = true;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public void UIManager(GameObject trueValue)
     {
         foreach (GameObject ui in myUI) ui.SetActive(ui == trueValue);
     }
+
+    void FindHerats()
+    {
+        GameObject parentHeart = GameObject.Find("Hearts");
+        if (hearts.Count != 3)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                hearts.Add(parentHeart.transform.GetChild(i).gameObject);
+            }
+        }
+            
+    }
     void Start()
     {
         saver = new Data_Saver();
         myUI = new List<GameObject> {homeScreen, gameOverScreen, finishScreen, loadingScreen, menuScreen, gameScreen, pauseScreen};
         instance.UIManager(homeScreen);
+        direction = 0;
+        lives = 3;
+        
 
         startButton.onClick.AddListener(StartGame);
         quitButton.onClick.AddListener(QuitGame);
@@ -62,7 +78,6 @@ public class menuScreenManager : MonoBehaviour
         retry.onClick.AddListener(Retry);
         menuBtn.onClick.AddListener(Menu);
         back.onClick.AddListener(Back);
-        jumpBtn.onClick.AddListener(IsJump);
         pause.onClick.AddListener(PauseGame);
         resume.onClick.AddListener(Resume);
         
@@ -78,7 +93,7 @@ public class menuScreenManager : MonoBehaviour
         }
     }
 
-    public void LevelOpen()
+    public void OpenLevels()
     {
         Dictionary<string, bool> dictionary = saver.Load();
         foreach(KeyValuePair<string, bool> kvp in dictionary)
@@ -98,7 +113,7 @@ public class menuScreenManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        if (instance != null)
         {
             Destroy(gameObject);
             return;
@@ -127,6 +142,7 @@ public class menuScreenManager : MonoBehaviour
     public void Menu()
     {
         instance.UIManager(menuScreen);
+        SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void Resume()
@@ -138,6 +154,9 @@ public class menuScreenManager : MonoBehaviour
     {
         int curr_index = SceneManager.GetActiveScene().buildIndex;
         int next_index = curr_index + 1;
+        lives = 3;
+        FindHerats();
+        StartHearts();
 
         if(next_index < SceneManager.sceneCountInBuildSettings - 1)
         {
@@ -164,7 +183,7 @@ public class menuScreenManager : MonoBehaviour
         else
         {
             int sceneIndx = levels.IndexOf(level);
-            StartCoroutine(LoadSceneAsync(sceneIndx));
+            StartCoroutine(LoadSceneAsync(sceneIndx + 1));
         }
             
     }
@@ -181,34 +200,38 @@ public class menuScreenManager : MonoBehaviour
         {
             float progress = Mathf.Clamp01(operation.progress / 0.9f);
             progressBar.value = progress;
-            progressText.text = progress + "%";
+            progressText.text = (progress*100) + "%";
 
             if (operation.progress >= 0.9f)
             {
                 yield return new WaitForSeconds(0.5f);
-                instance.UIManager(null);
+                instance.UIManager(gameScreen);
                 operation.allowSceneActivation = true;
             }
             yield return null;
         }
 
-
+        jumpBtn.onClick.AddListener(Character_Movement.instance.IsJump);
     }
 
     public void StartHearts()
     {
+        lives = 3;
+        FindHerats();
+
         foreach (GameObject heart in hearts)
         {
-            if (heart.GetComponent<Image>() == null)
+            if (heart.GetComponent<Image>() == null && lives == 3)
             {
                 heart.GetComponent<Image>().sprite = heartImage;
             }
         }
     }
 
-    public void HeartMechanism(int idx)
+    public void HeartMechanism()
     {
-        hearts[idx].GetComponent<Image>().sprite = emptyHeartImage;
+        lives--;
+        hearts[lives].GetComponent<Image>().sprite = emptyHeartImage;
     }
 
     private void AddPointerEvents(Button btn, System.Action onDown, System.Action onUp)
